@@ -12,6 +12,8 @@ module.exports = {
     sourceType: 'module',
   },
   rules: {
+    'no-underscore-dangle': 'off',
+    'no-plusplus': 'off',
   },
   settings: {
     'import/resolver': 'webpack',
