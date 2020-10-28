@@ -6,7 +6,7 @@ export default class Game {
     this.canvas = canvas;
 
     this.model = new Model();
-    this.view = new View(this.canvas);
+    this.view = new View(this.canvas, 9, 9);
 
     this._mainLoop = this._mainLoop.bind(this);
 
@@ -25,14 +25,16 @@ export default class Game {
   }
 
   _onMouseClick(e) {
+    // get the offset position of the canvas on the web page
     const rect = this.canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
 
-    const clickInfo = this.view.getMouseClickInfo(this.model.rows, this.model.columns, y, x);
-
-    if (clickInfo.type === 'tile') {
-      this.model.blastTiles(clickInfo.y, clickInfo.x);
+    const clickInfo = this.view.getMouseClickInfo(mouseY, mouseX);
+    if (clickInfo) {
+      if (clickInfo.type === 'tile') {
+        this.model.blastTiles(clickInfo.row, clickInfo.column);
+      }
     }
   }
 }

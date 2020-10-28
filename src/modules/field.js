@@ -29,8 +29,8 @@ export default class Field {
     return this._tiles;
   }
 
-  blastTiles(y, x) {
-    const blastedTiles = this._findBlastedTiles(y, x);
+  blastTiles(row, column) {
+    const blastedTiles = this._findBlastedTiles(row, column);
 
     if (blastedTiles.length < MATCHED_TILES) {
       blastedTiles.length = 0;

@@ -1,3 +1,5 @@
+import TilesView from './tiles-view';
+
 function importAllImages() {
   const context = require.context('Images/', false, /\.png/);
   const imagePaths = context.keys().map(context);
@@ -10,7 +12,8 @@ function importAllImages() {
 }
 
 export default class View {
-  constructor(canvas) {
+  // TODO: Temporary, rows and columns shouldn't be passed like that
+  constructor(canvas, rows, columns) {
     this.context = canvas.getContext('2d');
 
     this.images = this._loadImages();
@@ -23,16 +26,12 @@ export default class View {
       5: 'block_yellow',
     };
 
-    this.fieldLeft = 0;
     this.fieldTop = 0;
-    this.fieldWidth = 400;
+    this.fieldLeft = 0;
     this.fieldHeight = 400;
+    this.fieldWidth = 400;
 
-    this.tilesLeft = this.fieldLeft + 10;
-    this.tilesTop = this.fieldTop + 10;
-    this.tileWidth = 40;
-    this.tileHeight = 40;
-    this.tileOffset = 2;
+    this.tilesView = new TilesView(rows, columns, this.fieldLeft, this.fieldTop);
   }
 
   drawFrame(tiles) {
@@ -44,23 +43,13 @@ export default class View {
     }
   }
 
-  getMouseClickInfo(rows, columns, mouseY, mouseX) {
-    if (mouseX >= this.tilesLeft && mouseY >= this.tilesTop) {
-      const x = mouseX - (columns - 1) * this.tileOffset;
-      const y = mouseY - (rows - 1) * this.tileOffset;
-      const tileRight = this.tilesLeft + columns * this.tileWidth;
-      const tileBottom = this.tilesTop + rows * this.tileHeight;
-
-      if (x <= tileRight && y <= tileBottom) {
-        return {
-          type: 'tile',
-          x: Math.floor((x - this.tilesLeft) / (this.tileWidth)),
-          y: Math.floor((y - this.tilesTop) / (this.tileHeight)),
-        };
-      }
+  getMouseClickInfo(mouseY, mouseX) {
+    const tilesClickInfo = this.tilesView.getMouseClickInfo(mouseY, mouseX);
+    if (tilesClickInfo) {
+      return { type: 'tile', row: tilesClickInfo.row, column: tilesClickInfo.column };
     }
 
-    return { type: 'none' };
+    return null;
   }
 
   _loadImages() {
@@ -80,23 +69,23 @@ export default class View {
   }
 
   _drawTiles(tiles) {
-    const shiftX = this.tileWidth + this.tileOffset;
-    const shiftY = this.tileHeight + this.tileOffset;
+    const tilesView = this.tilesView.view;
+    const { tileHeight, tileWidth } = this.tilesView.tileDimensions;
 
-    let y = this.tilesTop;
-    tiles.forEach((tilesRow) => {
-      let x = this.tilesLeft;
+    const rows = tiles.length;
+    const columns = tiles[0].length;
 
-      tilesRow.forEach((tile) => {
-        if (tile in this.tileIndexToImageName) {
-          this.context.drawImage(
-            this.images[this.tileIndexToImageName[tile]], x, y, this.tileWidth, this.tileHeight,
-          );
+    for (let i = 0; i < rows; ++i) {
+      for (let j = 0; j < columns; ++j) {
+        const tileIndex = tiles[i][j];
+
+        if (tileIndex in this.tileIndexToImageName) {
+          const tileImage = this.images[this.tileIndexToImageName[tileIndex]];
+          const { y, x } = tilesView[i][j];
+
+          this.context.drawImage(tileImage, x, y, tileWidth, tileHeight);
         }
-        x += shiftX;
-      });
-
-      y += shiftY;
-    });
+      }
+    }
   }
 }

@@ -17,7 +17,7 @@ export default class Model {
     return this.field.tiles;
   }
 
-  blastTiles(y, x) {
-    return this.field.blastTiles(y, x);
+  blastTiles(row, column) {
+    return this.field.blastTiles(row, column);
   }
 }
