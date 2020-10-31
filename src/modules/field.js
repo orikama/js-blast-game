@@ -64,9 +64,8 @@ export default class Field {
     horizontalTilesToCheck.push({ y: row, x: column });
     verticalTilesToCheck.push({ y: row, x: column });
 
-    const isTileChecked = (y, x) => {
-      blastedTiles.some((tile) => tile.row === y && tile.column === x);
-    };
+    // eslint-disable-next-line max-len
+    const isTileChecked = (y, x) => blastedTiles.some((tile) => tile.row === y && tile.column === x);
 
     const onMatchFound = (tilesToCheck, y, x) => {
       blastedTiles.push({ row: y, column: x, index: blastedTileColor });
