@@ -40,9 +40,9 @@ export default class Game {
       const clickInfo = this.view.getMouseClickInfo(mouseY, mouseX);
       if (clickInfo) {
         if (clickInfo.type === 'tile') {
-          const animationsData = this.model.blastTiles(clickInfo.row, clickInfo.column);
-          if (animationsData) {
-            this.view.playTilesAnimations(animationsData);
+          const modelUpdateData = this.model.blastTiles(clickInfo.row, clickInfo.column);
+          if (modelUpdateData) {
+            this.view.onModelUpdate(modelUpdateData);
           }
         }
       }

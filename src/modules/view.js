@@ -15,8 +15,6 @@ export default class View {
   // TODO: Temporary, rows and columns shouldn't be passed like that
   constructor(canvas, rows, columns) {
     this.context = canvas.getContext('2d');
-    // NOTE: I guess I should take fill color from field image dynamically
-    this.context.fillStyle = 'rgb(13,35,61)';
 
     this.images = this._loadImages();
     this.areImagesLoaded = false;
@@ -34,6 +32,28 @@ export default class View {
     this.fieldWidth = 400;
 
     this.tilesView = new TilesView(rows, columns, this.fieldLeft, this.fieldTop);
+
+    this.scorePanelTop = 30;
+    this.scorePanelLeft = this.fieldLeft + this.fieldWidth + 20;
+    this.scorePanelHeight = 200;
+    this.scorePanelWidth = 200;
+
+    this.scorePanelMovesTop = this.scorePanelTop + 90;
+    this.scorePanelMovesLeft = this.scorePanelLeft + 75;
+    this.scorePanelPointsTop = this.scorePanelTop + 175;
+    this.scorePanelPointsLeft = this.scorePanelLeft + 70;
+
+    this.font = 'marvin';
+    this.movesFontSize = 40;
+    this.scoreFontSize = 30;
+
+    this.scorePanelShouldUpdate = false;
+    this.scorePanelPoints = 0;
+    this.scorePanelMoves = 0;
+
+    // NOTE: I guess I should take fill color from field image dynamically
+    this.fieldFillStyle = 'rgb(13,35,61)';
+    this.textFillStyle = 'white';
   }
 
   isAnimationPlaying() {
@@ -63,15 +83,32 @@ export default class View {
         );
         this._drawTiles(tiles);
       }
+
+      if (this.scorePanelShouldUpdate) {
+        this._drawPanelScore();
+        this.scorePanelShouldUpdate = false;
+      }
     }
   }
 
-  playTilesAnimations(animationsData) {
+  onModelUpdate({ animationsData, scoreData }) {
+    this._queueTilesAnimations(animationsData);
+    this._queueScorePanelUpdate(scoreData);
+  }
+
+  _queueTilesAnimations(animationsData) {
     this.tilesView.queueTilesDestructionAnimation(animationsData.blastedTiles);
     if (animationsData.gravityTiles) {
       this.tilesView.queueTilesGravityAnimation(animationsData.gravityTiles);
     }
     this.tilesView.queueTilesSpawnAnimation(animationsData.newTiles);
+  }
+
+  _queueScorePanelUpdate(scoreData) {
+    // TODO: scoreData.state is not processed rn
+    this.scorePanelPoints = scoreData.score;
+    this.scorePanelMoves = scoreData.movesLeft;
+    this.scorePanelShouldUpdate = true;
   }
 
   _loadImages() {
@@ -114,6 +151,7 @@ export default class View {
   _drawTilesAnimation() {
     const tilesView = this.tilesView.getTilesView();
 
+    this.context.fillStyle = this.fieldFillStyle;
     this.tilesView.getClearSections().forEach((clearSection) => {
       // eslint-disable-next-line object-curly-newline
       const { y, x, height, width } = clearSection;
@@ -127,5 +165,24 @@ export default class View {
 
       this.context.drawImage(tileImage, x, y, width, height);
     });
+  }
+
+  _drawPanelScore() {
+    this.context.drawImage(
+      this.images.panel_score,
+      this.scorePanelLeft, this.scorePanelTop,
+      this.scorePanelWidth, this.scorePanelHeight,
+    );
+
+    this.context.fillStyle = this.textFillStyle;
+
+    this.context.font = `${this.movesFontSize}px ${this.font}`;
+    this.context.fillText(
+      this.scorePanelMoves, this.scorePanelMovesLeft, this.scorePanelMovesTop,
+    );
+    this.context.font = `${this.scoreFontSize}px ${this.font}`;
+    this.context.fillText(
+      this.scorePanelPoints, this.scorePanelPointsLeft, this.scorePanelPointsTop,
+    );
   }
 }
