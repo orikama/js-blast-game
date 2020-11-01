@@ -32,13 +32,24 @@ export default class Field {
   blastTiles(row, column) {
     const blastedTiles = this._findBlastedTiles(row, column);
 
-    if (blastedTiles.length < MATCHED_TILES) {
-      blastedTiles.length = 0;
-    } else {
+    if (blastedTiles.length >= MATCHED_TILES) {
       this._removeTiles(blastedTiles);
+
+      // eslint-disable-next-line prefer-const
+      let { gravityTiles, emptyTiles } = this._findGravityTiles(blastedTiles);
+      let newTiles = null;
+
+      if (gravityTiles.length === 0) {
+        gravityTiles = null;
+      } else {
+        this._applyGravity(gravityTiles);
+      }
+      newTiles = this._recreateEmptyTiles(emptyTiles);
+
+      return { blastedTiles, gravityTiles, newTiles };
     }
 
-    return blastedTiles;
+    return null;
   }
 
   _createTiles() {
@@ -72,8 +83,6 @@ export default class Field {
       tilesToCheck.push({ y, x });
     };
 
-    // NOTE: У меня были идеи как объединить эти 4 цикла в один, но код превращался в такое дерьмо,
-    //  и меньше при этом не становился, а алгоритма проще я не придумал.
     while (horizontalTilesToCheck.length > 0 || verticalTilesToCheck.length > 0) {
       if (horizontalTilesToCheck.length > 0) {
         const { y, x } = horizontalTilesToCheck.pop();
@@ -108,9 +117,71 @@ export default class Field {
     return blastedTiles;
   }
 
+  _findGravityTiles(blastedTiles) {
+    const affectedColumns = new Map();
+    // find columns affected by gravity and lowest row(for each column) for the tiles to fall on
+    blastedTiles.forEach(({ row, column }) => {
+      if (affectedColumns.has(column)) {
+        if (row > affectedColumns.get(column)) {
+          affectedColumns.set(column, row);
+        }
+      } else {
+        affectedColumns.set(column, row);
+      }
+    });
+
+    const emptyTiles = [];
+    const gravityTiles = [];
+
+    affectedColumns.forEach((row, column) => {
+      let rowToFallOn = row;
+      // for each tile in column find the row on which it should fall
+      for (let i = row - 1; i >= 0; --i) {
+        if (this._tiles[i][column] !== EMPTY_TILE) {
+          gravityTiles.push({
+            row: i,
+            column,
+            index: this._tiles[i][column],
+            rowToFallOn,
+          });
+          --rowToFallOn;
+        }
+      }
+      // tiles starting from 'rowToFallOn' and above will be empty
+      for (let i = rowToFallOn; i >= 0; --i) {
+        emptyTiles.push({ row: i, column });
+      }
+    });
+
+    return { gravityTiles, emptyTiles };
+  }
+
+  _recreateEmptyTiles(emptyTiles) {
+    // TODO: Move tile generation to its own method?
+    const colorTileMinValue = EMPTY_TILE + 1;
+    const newTiles = [];
+
+    emptyTiles.forEach(({ row, column }) => {
+      const tileColor = getRandomInt(colorTileMinValue, this._colors);
+
+      this._tiles[row][column] = tileColor;
+      // NOTE: I don't need 'index' there technically
+      newTiles.push({ row, column, index: tileColor });
+    });
+
+    return newTiles;
+  }
+
   _removeTiles(tiles) {
-    tiles.forEach((tile) => {
-      this._tiles[tile.row][tile.column] = EMPTY_TILE;
+    tiles.forEach(({ row, column }) => {
+      this._tiles[row][column] = EMPTY_TILE;
+    });
+  }
+
+  _applyGravity(gravityTiles) {
+    gravityTiles.forEach(({ row, column, rowToFallOn }) => {
+      this._tiles[rowToFallOn][column] = this._tiles[row][column];
+      this._tiles[row][column] = EMPTY_TILE;
     });
   }
 }

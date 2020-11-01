@@ -15,6 +15,8 @@ export default class View {
   // TODO: Temporary, rows and columns shouldn't be passed like that
   constructor(canvas, rows, columns) {
     this.context = canvas.getContext('2d');
+    // NOTE: I guess I should take fill color from field image dynamically
+    this.context.fillStyle = 'rgb(13,35,61)';
 
     this.images = this._loadImages();
     this.areImagesLoaded = false;
@@ -34,13 +36,8 @@ export default class View {
     this.tilesView = new TilesView(rows, columns, this.fieldLeft, this.fieldTop);
   }
 
-  drawFrame(tiles) {
-    if (this.areImagesLoaded) {
-      this.context.drawImage(
-        this.images.field, this.fieldLeft, this.fieldTop, this.fieldWidth, this.fieldHeight,
-      );
-      this._drawTiles(tiles);
-    }
+  isAnimationPlaying() {
+    return this.tilesView.isAnimationPlaying();
   }
 
   getMouseClickInfo(mouseY, mouseX) {
@@ -50,6 +47,31 @@ export default class View {
     }
 
     return null;
+  }
+
+  update(dt) {
+    this.tilesView.update(dt);
+  }
+
+  drawFrame(tiles) {
+    if (this.areImagesLoaded) {
+      if (this.tilesView.isAnimationPlaying()) {
+        this._drawTilesAnimation();
+      } else {
+        this.context.drawImage(
+          this.images.field, this.fieldLeft, this.fieldTop, this.fieldWidth, this.fieldHeight,
+        );
+        this._drawTiles(tiles);
+      }
+    }
+  }
+
+  playTilesAnimations(animationsData) {
+    this.tilesView.queueTilesDestructionAnimation(animationsData.blastedTiles);
+    if (animationsData.gravityTiles) {
+      this.tilesView.queueTilesGravityAnimation(animationsData.gravityTiles);
+    }
+    this.tilesView.queueTilesSpawnAnimation(animationsData.newTiles);
   }
 
   _loadImages() {
@@ -69,8 +91,8 @@ export default class View {
   }
 
   _drawTiles(tiles) {
-    const tilesView = this.tilesView.view;
-    const { tileHeight, tileWidth } = this.tilesView.tileDimensions;
+    const tilesView = this.tilesView.getTilesView();
+    const { tileHeight, tileWidth } = this.tilesView.getTileDimensions();
 
     const rows = tiles.length;
     const columns = tiles[0].length;
@@ -87,5 +109,23 @@ export default class View {
         }
       }
     }
+  }
+
+  _drawTilesAnimation() {
+    const tilesView = this.tilesView.getTilesView();
+
+    this.tilesView.getClearSections().forEach((clearSection) => {
+      // eslint-disable-next-line object-curly-newline
+      const { y, x, height, width } = clearSection;
+      this.context.fillRect(x, y, width, height);
+    });
+
+    this.tilesView.getAnimatedTiles().forEach((tile) => {
+      const tileImage = this.images[this.tileIndexToImageName[tile.index]];
+      // eslint-disable-next-line object-curly-newline
+      const { y, x, height, width } = tilesView[tile.row][tile.column];
+
+      this.context.drawImage(tileImage, x, y, width, height);
+    });
   }
 }
