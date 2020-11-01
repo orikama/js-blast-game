@@ -1,40 +1,40 @@
 export default class InterfaceView {
-  constructor() {
-    this.font = 'marvin';
-    this.textFillStyle = 'white';
+  constructor(gameConfig) {
+    this.font = gameConfig.font;
+    this.textFillStyle = gameConfig.textFillStyle;
 
     this.field = {
       view: {
-        imageName: 'field',
-        top: 0,
-        left: 0,
-        height: 400,
-        width: 400,
+        imageName: gameConfig.field.imageName,
+        top: gameConfig.field.top,
+        left: gameConfig.field.left,
+        height: gameConfig.field.height,
+        width: gameConfig.field.width,
       },
       // NOTE: I guess I should take fill color from field image dynamically
-      fillStyle: 'rgb(13,35,61)',
+      fillStyle: gameConfig.field.fillStyle,
     };
 
     this.scorePanel = {
-      imageName: 'panel_score',
-      top: 30,
-      left: 420,
-      height: 200,
-      width: 200,
+      imageName: gameConfig.scorePanel.imageName,
+      top: gameConfig.scorePanel.top,
+      left: gameConfig.scorePanel.left,
+      height: gameConfig.scorePanel.height,
+      width: gameConfig.scorePanel.width,
     };
 
     this.scorePanelMoves = {
-      top: this.scorePanel.top + 90,
-      left: this.scorePanel.left + 75,
+      top: gameConfig.scorePanelMoves.top,
+      left: gameConfig.scorePanelMoves.left,
       text: '',
-      fontSize: 40,
+      fontSize: gameConfig.scorePanelMoves.fontSize,
     };
 
     this.scorePanelPoints = {
-      top: this.scorePanel.top + 175,
-      left: this.scorePanel.left + 70,
+      top: gameConfig.scorePanelPoints.top,
+      left: gameConfig.scorePanelPoints.left,
       text: '',
-      fontSize: 30,
+      fontSize: gameConfig.scorePanelPoints.fontSize,
     };
 
     this.scorePanelShouldUpdate = false;

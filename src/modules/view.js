@@ -14,7 +14,7 @@ function importAllImages() {
 
 export default class View {
   // TODO: Temporary, rows and columns shouldn't be passed like that
-  constructor(canvas, rows, columns) {
+  constructor(gameConfig, canvas, rows, columns) {
     this.context = canvas.getContext('2d');
 
     this.images = this._loadImages();
@@ -31,7 +31,7 @@ export default class View {
     this.fieldTop = 0;
     this.fieldLeft = 0;
 
-    this.interfaceView = new InterfaceView();
+    this.interfaceView = new InterfaceView(gameConfig);
     this.tilesView = new TilesView(rows, columns, this.fieldLeft, this.fieldTop);
   }
 
