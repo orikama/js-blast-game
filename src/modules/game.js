@@ -2,10 +2,10 @@ import Model from './model';
 import View from './view';
 
 export default class Game {
-  constructor(gameConfig, canvas) {
+  constructor(gameConfig, levels, canvas) {
     this.canvas = canvas;
 
-    this.model = new Model();
+    this.model = new Model(levels);
     this.view = new View(gameConfig, this.canvas, 9, 9);
 
     this.lastTimestamp = 0.0;

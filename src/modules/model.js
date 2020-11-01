@@ -1,13 +1,18 @@
 import Field from './field';
 
 export default class Model {
-  constructor() {
-    this.field = new Field(9, 9, 5);
+  constructor(levels) {
+    console.log(levels);
+    this.levels = levels;
+    this.field = new Field(
+      levels[0].rows, levels[0].columns, levels[0].colors, levels[0].tilesToMatch,
+    );
 
-    this.movesLeft = 37;
-    this.scoreGoal = 1000;
-    this.score = 0;
+    this.movesLeft = levels[0].moves;
+    this.scoreGoal = levels[0].scoreGoal;
     this.pointsForTile = 20;
+
+    this.score = 0;
     this.state = 'playing';
   }
 

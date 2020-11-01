@@ -6,13 +6,13 @@ function getRandomInt(min, max) {
 }
 
 const EMPTY_TILE = 0;
-const MATCHED_TILES = 2; // TODO: Should be configurable
 
 export default class Field {
-  constructor(rows, columns, colors) {
+  constructor(rows, columns, colors, tilesToMatch) {
     this._rows = rows;
     this._columns = columns;
     this._colors = colors;
+    this._tilesToMatch = tilesToMatch;
 
     this._tiles = this._createTiles();
   }
@@ -32,7 +32,7 @@ export default class Field {
   blastTiles(row, column) {
     const blastedTiles = this._findBlastedTiles(row, column);
 
-    if (blastedTiles.length >= MATCHED_TILES) {
+    if (blastedTiles.length >= this._tilesToMatch) {
       this._removeTiles(blastedTiles);
 
       // eslint-disable-next-line prefer-const
