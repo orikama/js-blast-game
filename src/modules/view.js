@@ -1,3 +1,4 @@
+import InterfaceView from './interface-view';
 import TilesView from './tiles-view';
 
 function importAllImages() {
@@ -26,34 +27,12 @@ export default class View {
       5: 'block_yellow',
     };
 
+    // TODO: remove this fileds
     this.fieldTop = 0;
     this.fieldLeft = 0;
-    this.fieldHeight = 400;
-    this.fieldWidth = 400;
 
+    this.interfaceView = new InterfaceView();
     this.tilesView = new TilesView(rows, columns, this.fieldLeft, this.fieldTop);
-
-    this.scorePanelTop = 30;
-    this.scorePanelLeft = this.fieldLeft + this.fieldWidth + 20;
-    this.scorePanelHeight = 200;
-    this.scorePanelWidth = 200;
-
-    this.scorePanelMovesTop = this.scorePanelTop + 90;
-    this.scorePanelMovesLeft = this.scorePanelLeft + 75;
-    this.scorePanelPointsTop = this.scorePanelTop + 175;
-    this.scorePanelPointsLeft = this.scorePanelLeft + 70;
-
-    this.font = 'marvin';
-    this.movesFontSize = 40;
-    this.scoreFontSize = 30;
-
-    this.scorePanelShouldUpdate = false;
-    this.scorePanelPoints = 0;
-    this.scorePanelMoves = 0;
-
-    // NOTE: I guess I should take fill color from field image dynamically
-    this.fieldFillStyle = 'rgb(13,35,61)';
-    this.textFillStyle = 'white';
   }
 
   isAnimationPlaying() {
@@ -78,22 +57,22 @@ export default class View {
       if (this.tilesView.isAnimationPlaying()) {
         this._drawTilesAnimation();
       } else {
-        this.context.drawImage(
-          this.images.field, this.fieldLeft, this.fieldTop, this.fieldWidth, this.fieldHeight,
-        );
+        // NOTE: I shouldn't redraw interface every time
+        //  And scorePanel must be updated before tile animations
+        this._drawInterface();
         this._drawTiles(tiles);
       }
 
-      if (this.scorePanelShouldUpdate) {
-        this._drawPanelScore();
-        this.scorePanelShouldUpdate = false;
-      }
+      // if (this.scorePanelShouldUpdate) {
+      //   this._drawPanelScore();
+      //   this.scorePanelShouldUpdate = false;
+      // }
     }
   }
 
   onModelUpdate({ animationsData, scoreData }) {
     this._queueTilesAnimations(animationsData);
-    this._queueScorePanelUpdate(scoreData);
+    this.interfaceView.onScorePanelUpdate(scoreData);
   }
 
   _queueTilesAnimations(animationsData) {
@@ -102,13 +81,6 @@ export default class View {
       this.tilesView.queueTilesGravityAnimation(animationsData.gravityTiles);
     }
     this.tilesView.queueTilesSpawnAnimation(animationsData.newTiles);
-  }
-
-  _queueScorePanelUpdate(scoreData) {
-    // TODO: scoreData.state is not processed rn
-    this.scorePanelPoints = scoreData.score;
-    this.scorePanelMoves = scoreData.movesLeft;
-    this.scorePanelShouldUpdate = true;
   }
 
   _loadImages() {
@@ -125,6 +97,27 @@ export default class View {
     });
 
     return images;
+  }
+
+  _drawInterface() {
+    const { imageViews, textViews } = this.interfaceView.getView();
+
+    imageViews.forEach((imageView) => {
+      const image = this.images[imageView.imageName];
+      this.context.drawImage(
+        image, imageView.left, imageView.top, imageView.width, imageView.height,
+      );
+    });
+
+    this.context.fillStyle = this.interfaceView.getTextFillStyle();
+    const font = this.interfaceView.getFont();
+
+    textViews.forEach((textView) => {
+      this.context.font = `${textView.fontSize}px ${font}`;
+      this.context.fillText(
+        textView.text, textView.left, textView.top,
+      );
+    });
   }
 
   _drawTiles(tiles) {
@@ -151,7 +144,7 @@ export default class View {
   _drawTilesAnimation() {
     const tilesView = this.tilesView.getTilesView();
 
-    this.context.fillStyle = this.fieldFillStyle;
+    this.context.fillStyle = this.interfaceView.getFieldFillStyle();
     this.tilesView.getClearSections().forEach((clearSection) => {
       // eslint-disable-next-line object-curly-newline
       const { y, x, height, width } = clearSection;
@@ -165,24 +158,5 @@ export default class View {
 
       this.context.drawImage(tileImage, x, y, width, height);
     });
-  }
-
-  _drawPanelScore() {
-    this.context.drawImage(
-      this.images.panel_score,
-      this.scorePanelLeft, this.scorePanelTop,
-      this.scorePanelWidth, this.scorePanelHeight,
-    );
-
-    this.context.fillStyle = this.textFillStyle;
-
-    this.context.font = `${this.movesFontSize}px ${this.font}`;
-    this.context.fillText(
-      this.scorePanelMoves, this.scorePanelMovesLeft, this.scorePanelMovesTop,
-    );
-    this.context.font = `${this.scoreFontSize}px ${this.font}`;
-    this.context.fillText(
-      this.scorePanelPoints, this.scorePanelPointsLeft, this.scorePanelPointsTop,
-    );
   }
 }
