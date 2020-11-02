@@ -14,11 +14,10 @@ function importAllImages() {
 
 export default class View {
   // TODO: Temporary, rows and columns shouldn't be passed like that
-  constructor(gameConfig, canvas, rows, columns) {
+  constructor(gameConfig, canvas, imagesLoadedCallback) {
     this.context = canvas.getContext('2d');
 
-    this.images = this._loadImages();
-    this.areImagesLoaded = false;
+    this.images = View._loadImages(imagesLoadedCallback);
     this.tileIndexToImageName = {
       1: 'block_blue',
       2: 'block_green',
@@ -32,11 +31,15 @@ export default class View {
     this.fieldLeft = 0;
 
     this.interfaceView = new InterfaceView(gameConfig);
-    this.tilesView = new TilesView(rows, columns, this.fieldLeft, this.fieldTop);
+    this.tilesView = null;
   }
 
   isAnimationPlaying() {
     return this.tilesView.isAnimationPlaying();
+  }
+
+  getLevelChangedListener() {
+    return this._onModelLevelChanged.bind(this);
   }
 
   getMouseClickInfo(mouseY, mouseX) {
@@ -48,31 +51,22 @@ export default class View {
     return null;
   }
 
+  setLevelChangedListener(listener) {
+    this.imagesLoadedCallback = listener;
+  }
+
   update(dt) {
     this.tilesView.update(dt);
   }
 
-  drawFrame(tiles) {
-    if (this.areImagesLoaded) {
-      if (this.tilesView.isAnimationPlaying()) {
-        this._drawTilesAnimation();
-      } else {
-        // NOTE: I shouldn't redraw interface every time
-        //  And scorePanel must be updated before tile animations
-        this._drawInterface();
-        this._drawTiles(tiles);
-      }
-
-      // if (this.scorePanelShouldUpdate) {
-      //   this._drawPanelScore();
-      //   this.scorePanelShouldUpdate = false;
-      // }
-    }
+  drawFrame() {
+    this._drawTilesAnimation();
   }
 
-  onModelUpdate({ animationsData, scoreData }) {
+  onModelTilesBlasted({ animationsData, scoreData }) {
     this._queueTilesAnimations(animationsData);
-    this.interfaceView.onScorePanelUpdate(scoreData);
+    this.interfaceView.updateScorePanel(scoreData);
+    this._drawInterface(this.interfaceView.getUpdatedView());
   }
 
   _queueTilesAnimations(animationsData) {
@@ -83,25 +77,17 @@ export default class View {
     this.tilesView.queueTilesSpawnAnimation(animationsData.newTiles);
   }
 
-  _loadImages() {
-    const imageInfos = importAllImages();
+  _onModelLevelChanged({ tiles, movesLeft, score }) {
+    const rows = tiles.length;
+    const columns = tiles[0].length;
+    this.tilesView = new TilesView(rows, columns, this.fieldLeft, this.fieldTop);
 
-    let imageCount = imageInfos.length;
-    const onLoad = () => { if (--imageCount === 0) this.areImagesLoaded = true; };
-
-    const images = {};
-    imageInfos.forEach(({ imageName, imagePath }) => {
-      images[imageName] = new Image();
-      images[imageName].src = imagePath;
-      images[imageName].onload = onLoad;
-    });
-
-    return images;
+    this.interfaceView.updateScorePanel({ movesLeft, score });
+    this._drawInterface(this.interfaceView.getView());
+    this._drawTiles(tiles);
   }
 
-  _drawInterface() {
-    const { imageViews, textViews } = this.interfaceView.getView();
-
+  _drawInterface({ imageViews, textViews }) {
     imageViews.forEach((imageView) => {
       const image = this.images[imageView.imageName];
       this.context.drawImage(
@@ -158,5 +144,21 @@ export default class View {
 
       this.context.drawImage(tileImage, x, y, width, height);
     });
+  }
+
+  static _loadImages(imagesLoadedCallback) {
+    const imageInfos = importAllImages();
+
+    let imageCount = imageInfos.length;
+    const onLoad = () => { if (--imageCount === 0) imagesLoadedCallback(); };
+
+    const images = {};
+    imageInfos.forEach(({ imageName, imagePath }) => {
+      images[imageName] = new Image();
+      images[imageName].src = imagePath;
+      images[imageName].onload = onLoad;
+    });
+
+    return images;
   }
 }

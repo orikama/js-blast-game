@@ -2,30 +2,27 @@ import Field from './field';
 
 export default class Model {
   constructor(levels) {
-    console.log(levels);
     this.levels = levels;
-    this.field = new Field(
-      levels[0].rows, levels[0].columns, levels[0].colors, levels[0].tilesToMatch,
-    );
+    this.currentLevel = 0;
 
-    this.movesLeft = levels[0].moves;
-    this.scoreGoal = levels[0].scoreGoal;
+    this.field = null;
+
+    this.movesLeft = 0;
+    this.scoreGoal = 0;
     this.pointsForTile = 20;
 
     this.score = 0;
     this.state = 'playing';
+
+    this.levelChangedCallback = null;
   }
 
-  get rows() {
-    return this.field.rows;
+  setLevelChangedListener(listener) {
+    this.levelChangedCallback = listener;
   }
 
-  get columns() {
-    return this.field.columns;
-  }
-
-  get tiles() {
-    return this.field.tiles;
+  init() {
+    this._setLevel(this.currentLevel);
   }
 
   blastTiles(row, column) {
@@ -54,5 +51,29 @@ export default class Model {
     } else if (this.movesLeft === 0) {
       this.state = 'lost';
     }
+  }
+
+  _setLevel(level) {
+    const currentLevel = this.levels[level];
+
+    this.field = new Field(
+      currentLevel.rows, currentLevel.columns, currentLevel.colors, currentLevel.tilesToMatch,
+    );
+    this.movesLeft = currentLevel.moves;
+    this.scoreGoal = currentLevel.scoreGoal;
+    this.pointsForTile = 20;
+
+    this.score = 0;
+    this.state = 'playing';
+
+    this._levelChanged();
+  }
+
+  _levelChanged() {
+    this.levelChangedCallback({
+      tiles: this.field.getTiles(),
+      movesLeft: this.movesLeft,
+      score: this.score,
+    });
   }
 }

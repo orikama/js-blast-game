@@ -64,7 +64,19 @@ export default class InterfaceView {
     return { imageViews, textViews };
   }
 
-  onScorePanelUpdate(scoreData) {
+  getUpdatedView() {
+    const imageViews = [];
+    const textViews = [];
+
+    if (this.scorePanelShouldUpdate) {
+      imageViews.push(this.scorePanel);
+      textViews.push(this.scorePanelMoves, this.scorePanelPoints);
+    }
+
+    return { imageViews, textViews };
+  }
+
+  updateScorePanel(scoreData) {
     // TODO: scoreData.state is not processed rn
     this.scorePanelMoves.text = scoreData.movesLeft.toString();
     this.scorePanelPoints.text = scoreData.score.toString();

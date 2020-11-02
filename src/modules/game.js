@@ -6,24 +6,32 @@ export default class Game {
     this.canvas = canvas;
 
     this.model = new Model(levels);
-    this.view = new View(gameConfig, this.canvas, 9, 9);
+    this.view = new View(
+      gameConfig, this.canvas, this._onImagesLoaded.bind(this),
+    );
 
     this.lastTimestamp = 0.0;
-
-    this._mainLoop = this._mainLoop.bind(this);
+    this._animationLoopBind = this._animationLoop.bind(this);
 
     this.canvas.addEventListener('click', this._onMouseClick.bind(this), false);
   }
 
   run() {
-    window.requestAnimationFrame(this._mainLoop);
+    this.model.setLevelChangedListener(this.view.getLevelChangedListener());
   }
 
-  _mainLoop(timestamp) {
-    this._update(timestamp);
-    this.view.drawFrame(this.model.tiles);
+  _runAnimationLoop() {
+    this.lastTimestamp = window.performance.now();
+    window.requestAnimationFrame(this._animationLoopBind);
+  }
 
-    window.requestAnimationFrame(this._mainLoop);
+  _animationLoop(timestamp) {
+    this._update(timestamp);
+    if (this.view.isAnimationPlaying()) {
+      this.view.drawFrame();
+
+      window.requestAnimationFrame(this._animationLoopBind);
+    }
   }
 
   _update(timestamp) {
@@ -31,6 +39,10 @@ export default class Game {
     this.lastTimestamp = timestamp;
 
     this.view.update(dt);
+  }
+
+  _onImagesLoaded() {
+    this.model.init();
   }
 
   _onMouseClick(e) {
@@ -42,7 +54,8 @@ export default class Game {
         if (clickInfo.type === 'tile') {
           const modelUpdateData = this.model.blastTiles(clickInfo.row, clickInfo.column);
           if (modelUpdateData) {
-            this.view.onModelUpdate(modelUpdateData);
+            this.view.onModelTilesBlasted(modelUpdateData);
+            this._runAnimationLoop();
           }
         }
       }

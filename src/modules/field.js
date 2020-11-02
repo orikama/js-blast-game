@@ -9,30 +9,22 @@ const EMPTY_TILE = 0;
 
 export default class Field {
   constructor(rows, columns, colors, tilesToMatch) {
-    this._rows = rows;
-    this._columns = columns;
-    this._colors = colors;
-    this._tilesToMatch = tilesToMatch;
+    this.rows = rows;
+    this.columns = columns;
+    this.colors = colors;
+    this.tilesToMatch = tilesToMatch;
 
-    this._tiles = this._createTiles();
+    this.tiles = this._createTiles();
   }
 
-  get rows() {
-    return this._rows;
-  }
-
-  get columns() {
-    return this._columns;
-  }
-
-  get tiles() {
-    return this._tiles;
+  getTiles() {
+    return this.tiles;
   }
 
   blastTiles(row, column) {
     const blastedTiles = this._findBlastedTiles(row, column);
 
-    if (blastedTiles.length >= this._tilesToMatch) {
+    if (blastedTiles.length >= this.tilesToMatch) {
       this._removeTiles(blastedTiles);
 
       // eslint-disable-next-line prefer-const
@@ -56,16 +48,16 @@ export default class Field {
     const colorTileMinValue = EMPTY_TILE + 1;
 
     return Array.from(
-      { length: this._rows },
+      { length: this.rows },
       () => Array.from(
-        { length: this._columns },
-        () => getRandomInt(colorTileMinValue, this._colors),
+        { length: this.columns },
+        () => getRandomInt(colorTileMinValue, this.colors),
       ),
     );
   }
 
   _findBlastedTiles(row, column) {
-    const blastedTileColor = this._tiles[row][column];
+    const blastedTileColor = this.tiles[row][column];
     const blastedTiles = [];
 
     const horizontalTilesToCheck = [];
@@ -88,12 +80,12 @@ export default class Field {
         const { y, x } = horizontalTilesToCheck.pop();
 
         for (let j = x + 1;
-          j < this._columns && blastedTileColor === this._tiles[y][j] && !isTileChecked(y, j);
+          j < this.columns && blastedTileColor === this.tiles[y][j] && !isTileChecked(y, j);
           ++j) {
           onMatchFound(verticalTilesToCheck, y, j);
         }
         for (let j = x - 1;
-          j >= 0 && blastedTileColor === this._tiles[y][j] && !isTileChecked(y, j);
+          j >= 0 && blastedTileColor === this.tiles[y][j] && !isTileChecked(y, j);
           --j) {
           onMatchFound(verticalTilesToCheck, y, j);
         }
@@ -102,12 +94,12 @@ export default class Field {
         const { y, x } = verticalTilesToCheck.pop();
 
         for (let i = y + 1;
-          i < this._rows && blastedTileColor === this._tiles[i][x] && !isTileChecked(i, x);
+          i < this.rows && blastedTileColor === this.tiles[i][x] && !isTileChecked(i, x);
           ++i) {
           onMatchFound(horizontalTilesToCheck, i, x);
         }
         for (let i = y - 1;
-          i >= 0 && blastedTileColor === this._tiles[i][x] && !isTileChecked(i, x);
+          i >= 0 && blastedTileColor === this.tiles[i][x] && !isTileChecked(i, x);
           --i) {
           onMatchFound(horizontalTilesToCheck, i, x);
         }
@@ -137,11 +129,11 @@ export default class Field {
       let rowToFallOn = row;
       // for each tile in column find the row on which it should fall
       for (let i = row - 1; i >= 0; --i) {
-        if (this._tiles[i][column] !== EMPTY_TILE) {
+        if (this.tiles[i][column] !== EMPTY_TILE) {
           gravityTiles.push({
             row: i,
             column,
-            index: this._tiles[i][column],
+            index: this.tiles[i][column],
             rowToFallOn,
           });
           --rowToFallOn;
@@ -162,9 +154,9 @@ export default class Field {
     const newTiles = [];
 
     emptyTiles.forEach(({ row, column }) => {
-      const tileColor = getRandomInt(colorTileMinValue, this._colors);
+      const tileColor = getRandomInt(colorTileMinValue, this.colors);
 
-      this._tiles[row][column] = tileColor;
+      this.tiles[row][column] = tileColor;
       // NOTE: I don't need 'index' there technically
       newTiles.push({ row, column, index: tileColor });
     });
@@ -174,14 +166,14 @@ export default class Field {
 
   _removeTiles(tiles) {
     tiles.forEach(({ row, column }) => {
-      this._tiles[row][column] = EMPTY_TILE;
+      this.tiles[row][column] = EMPTY_TILE;
     });
   }
 
   _applyGravity(gravityTiles) {
     gravityTiles.forEach(({ row, column, rowToFallOn }) => {
-      this._tiles[rowToFallOn][column] = this._tiles[row][column];
-      this._tiles[row][column] = EMPTY_TILE;
+      this.tiles[rowToFallOn][column] = this.tiles[row][column];
+      this.tiles[row][column] = EMPTY_TILE;
     });
   }
 }
