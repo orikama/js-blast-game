@@ -21,13 +21,14 @@ export default class View {
 
     this.images = View._loadImages(imagesLoadedCallback);
     // NOTE: Not configurable
-    this.tileIndexToImageName = {
-      1: 'block_blue',
-      2: 'block_green',
-      3: 'block_purple',
-      4: 'block_red',
-      5: 'block_yellow',
-    };
+    this.tileIndexToImageName = new Map([
+      [-1, 'block_tnt'],
+      [1, 'block_blue'],
+      [2, 'block_green'],
+      [3, 'block_purple'],
+      [4, 'block_red'],
+      [5, 'block_yellow'],
+    ]);
 
     this.interfaceView = new InterfaceView(viewConfig.interfaceView);
     this.tilesView = new TilesView(viewConfig.tilesView);
@@ -106,6 +107,8 @@ export default class View {
     const columns = tiles[0].length;
     this.tilesView.createView(rows, columns);
 
+    // NOTE: This interfaceView updates are gonna set '<object>ShouldUpdate' = true,
+    //  Although it doesn't affect anything rn, its technically a bug
     this.interfaceView.updateScorePanel({ movesLeft, score });
     // NOTE: По идее, при текущей реализации нет смысла обновлять этот бонус при смене уровня,
     //  но это был быстрый костыль
@@ -163,8 +166,8 @@ export default class View {
       for (let j = 0; j < columns; ++j) {
         const tileIndex = tiles[i][j];
 
-        if (tileIndex in this.tileIndexToImageName) {
-          const tileImage = this.images[this.tileIndexToImageName[tileIndex]];
+        if (this.tileIndexToImageName.has(tileIndex)) {
+          const tileImage = this.images[this.tileIndexToImageName.get(tileIndex)];
           const { y, x } = tilesView[i][j];
 
           this.context.drawImage(tileImage, x, y, tileWidth, tileHeight);
@@ -184,7 +187,7 @@ export default class View {
     });
 
     this.tilesView.getAnimatedTiles().forEach((tile) => {
-      const tileImage = this.images[this.tileIndexToImageName[tile.index]];
+      const tileImage = this.images[this.tileIndexToImageName.get(tile.index)];
       // eslint-disable-next-line object-curly-newline
       const { y, x, height, width } = tilesView[tile.row][tile.column];
 

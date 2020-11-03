@@ -6,6 +6,10 @@ function getRandomInt(min, max) {
 }
 
 const EMPTY_TILE = 0;
+const BOMB_TILE = -1;
+
+const TILES_TO_SPAWN_BOMB = 3;
+const BOMB_BLAST_RADIUS = 1;
 
 export default class Field {
   constructor(rows, columns, colors, tilesToMatch) {
@@ -25,18 +29,24 @@ export default class Field {
     const blastedTiles = this._findBlastedTiles(row, column);
 
     if (blastedTiles.length >= this.tilesToMatch) {
+      // NOTE: Зря я побежал добавлять эту хрень в последний момент,
+      //  тайл бомбы не отрисовывается если нет тайлов с гравитацией, хоть он и работает при этом
+      const specialTile = Field._shouldSpawnSpecialTile(blastedTiles.length);
+      if (specialTile) {
+        this._spawnSpecialTile(blastedTiles, specialTile, row, column);
+      }
+
       this._removeTiles(blastedTiles);
 
       // eslint-disable-next-line prefer-const
       let { gravityTiles, emptyTiles } = this._findGravityTiles(blastedTiles);
-      let newTiles = null;
-
       if (gravityTiles.length === 0) {
         gravityTiles = null;
       } else {
         this._applyGravity(gravityTiles);
       }
-      newTiles = this._recreateEmptyTiles(emptyTiles);
+
+      const newTiles = this._recreateEmptyTiles(emptyTiles);
 
       return { blastedTiles, gravityTiles, newTiles };
     }
@@ -68,6 +78,38 @@ export default class Field {
   }
 
   _findBlastedTiles(row, column) {
+    switch (this.tiles[row][column]) {
+      case BOMB_TILE:
+        return this._findBlastedByBombTiles(row, column);
+      default:
+        return this._findBlastedColorTiles(row, column);
+    }
+  }
+
+  _findBlastedByBombTiles(row, column) {
+    const startI = Math.max(0, row - BOMB_BLAST_RADIUS);
+    const endI = Math.min(this.rows, row + BOMB_BLAST_RADIUS + 1);
+
+    const startJ = Math.max(0, column - BOMB_BLAST_RADIUS);
+    const endJ = Math.min(this.columns, column + BOMB_BLAST_RADIUS + 1);
+
+    const blastedTiles = [];
+    blastedTiles.push({ row, column, index: BOMB_TILE });
+
+    for (let i = startI; i < endI; ++i) {
+      for (let j = startJ; j < endJ; ++j) {
+        blastedTiles.push({
+          row: i,
+          column: j,
+          index: this.tiles[i][j],
+        });
+      }
+    }
+
+    return blastedTiles;
+  }
+
+  _findBlastedColorTiles(row, column) {
     const blastedTileColor = this.tiles[row][column];
     const blastedTiles = [];
 
@@ -173,6 +215,22 @@ export default class Field {
     });
 
     return newTiles;
+  }
+
+  static _shouldSpawnSpecialTile(amountOfEmptyTiles) {
+    if (amountOfEmptyTiles >= TILES_TO_SPAWN_BOMB) {
+      return BOMB_TILE;
+    }
+
+    return null;
+  }
+
+  _spawnSpecialTile(blastedTiles, specialTile, clickRow, clickColumn) {
+    // eslint-disable-next-line max-len
+    const index = blastedTiles.findIndex(({ row, column }) => clickRow === row && clickColumn === column);
+    const { row, column } = blastedTiles[index];
+    this.tiles[row][column] = specialTile;
+    blastedTiles.splice(index, 1);
   }
 
   _removeTiles(tiles) {
