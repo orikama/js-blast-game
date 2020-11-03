@@ -1,24 +1,22 @@
 import ScaleAnimation from './scale-animation';
 import GravityAnimation from './gravity-animation';
 
-// TODO: Move this to config
-const DESTRUCTION_ANIMATION_DURATION = 0.2;
-const GRAVITY_ANIMATION_DURATION = 0.5;
-const SPAWN_ANIMATION_DURATION = 0.2;
-
 export default class TilesView {
-  constructor(rows, columns, fieldLeft, fieldTop) {
-    this.rows = rows;
-    this.columns = columns;
-    // TODO: Move this to config
-    this.tilesTop = fieldTop + 10;
-    this.tilesLeft = fieldLeft + 10;
-    this.tileHeight = 40;
-    this.tileWidth = 40;
+  constructor(tilesViewConfig) {
+    this.destructionAnimationDuration = tilesViewConfig.animationDurations.destruction;
+    this.gravityAnimationDuration = tilesViewConfig.animationDurations.gravity;
+    this.spawnAnimationDuration = tilesViewConfig.animationDurations.spawn;
+
+    this.tilesTop = tilesViewConfig.tiles.top;
+    this.tilesLeft = tilesViewConfig.tiles.left;
+    this.tileHeight = tilesViewConfig.tiles.height;
+    this.tileWidth = tilesViewConfig.tiles.width;
+
+    this.rows = 0;
+    this.columns = 0;
 
     this.defaultTilesView = null;
     this.currentTilesView = null;
-    this._createTilesViews();
 
     this.animationsQueue = [];
   }
@@ -60,8 +58,11 @@ export default class TilesView {
     return null;
   }
 
-  queueAnimation(animation) {
-    this.animationsQueue.push(animation);
+  createView(rows, columns) {
+    this.rows = rows;
+    this.columns = columns;
+
+    this._createTilesViews();
   }
 
   update(dt) {
@@ -87,23 +88,23 @@ export default class TilesView {
     }
   }
 
-  queueTilesDestructionAnimation(tiles) {
+  queueTilesDestructionAnimation(blastedTiles) {
     this.animationsQueue.push(new ScaleAnimation(
-      tiles, DESTRUCTION_ANIMATION_DURATION, this.defaultTilesView,
+      blastedTiles, this.destructionAnimationDuration, this.defaultTilesView,
       this.tileHeight, this.tileWidth,
       1.0, 0.0,
     ));
   }
 
-  queueTilesGravityAnimation(tiles) {
+  queueTilesGravityAnimation(gravityTiles) {
     this.animationsQueue.push(new GravityAnimation(
-      tiles, GRAVITY_ANIMATION_DURATION, this.defaultTilesView,
+      gravityTiles, this.gravityAnimationDuration, this.defaultTilesView,
     ));
   }
 
-  queueTilesSpawnAnimation(tiles) {
+  queueTilesSpawnAnimation(newTiles) {
     this.animationsQueue.push(new ScaleAnimation(
-      tiles, SPAWN_ANIMATION_DURATION, this.defaultTilesView,
+      newTiles, this.spawnAnimationDuration, this.defaultTilesView,
       this.tileHeight, this.tileWidth,
       0.0, 1.0,
     ));

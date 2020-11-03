@@ -21,6 +21,7 @@ export default class View {
     this.context = canvas.getContext('2d');
 
     this.images = View._loadImages(imagesLoadedCallback);
+    // NOTE: Not configurable
     this.tileIndexToImageName = {
       1: 'block_blue',
       2: 'block_green',
@@ -29,12 +30,8 @@ export default class View {
       5: 'block_yellow',
     };
 
-    // TODO: remove this fields
-    this.fieldTop = 0;
-    this.fieldLeft = 0;
-
-    this.interfaceView = new InterfaceView(gameConfig);
-    this.tilesView = null;
+    this.interfaceView = new InterfaceView(gameConfig.interfaceView);
+    this.tilesView = new TilesView(gameConfig.tilesView);
 
     this.viewState = VIEW_STATE_GAME;
   }
@@ -95,7 +92,7 @@ export default class View {
   _onModelLevelChanged({ tiles, movesLeft, score }) {
     const rows = tiles.length;
     const columns = tiles[0].length;
-    this.tilesView = new TilesView(rows, columns, this.fieldLeft, this.fieldTop);
+    this.tilesView.createView(rows, columns);
 
     this.interfaceView.updateScorePanel({ movesLeft, score });
     this._drawInterface(this.interfaceView.getInterfaceView());

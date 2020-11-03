@@ -1,69 +1,69 @@
 export default class InterfaceView {
-  constructor(gameConfig) {
-    this.font = gameConfig.font;
-    this.textFillStyle = gameConfig.textFillStyle;
+  constructor(interfaceViewConfig) {
+    this.font = interfaceViewConfig.font;
+    this.textFillStyle = interfaceViewConfig.textFillStyle;
 
     this.field = {
       view: {
-        imageName: gameConfig.field.imageName,
-        top: gameConfig.field.top,
-        left: gameConfig.field.left,
-        height: gameConfig.field.height,
-        width: gameConfig.field.width,
+        imageName: interfaceViewConfig.field.imageName,
+        top: interfaceViewConfig.field.top,
+        left: interfaceViewConfig.field.left,
+        height: interfaceViewConfig.field.height,
+        width: interfaceViewConfig.field.width,
       },
-      fillStyle: gameConfig.field.fillStyle,
+      fillStyle: interfaceViewConfig.field.fillStyle,
     };
 
     this.scorePanel = {
-      imageName: gameConfig.scorePanel.imageName,
-      top: gameConfig.scorePanel.top,
-      left: gameConfig.scorePanel.left,
-      height: gameConfig.scorePanel.height,
-      width: gameConfig.scorePanel.width,
+      imageName: interfaceViewConfig.scorePanel.imageName,
+      top: interfaceViewConfig.scorePanel.top,
+      left: interfaceViewConfig.scorePanel.left,
+      height: interfaceViewConfig.scorePanel.height,
+      width: interfaceViewConfig.scorePanel.width,
     };
 
     this.scorePanelMoves = {
-      top: gameConfig.scorePanelMoves.top,
-      left: gameConfig.scorePanelMoves.left,
+      top: interfaceViewConfig.scorePanelMoves.top,
+      left: interfaceViewConfig.scorePanelMoves.left,
       text: '',
-      fontSize: gameConfig.scorePanelMoves.fontSize,
+      fontSize: interfaceViewConfig.scorePanelMoves.fontSize,
     };
 
     this.scorePanelPoints = {
-      top: gameConfig.scorePanelPoints.top,
-      left: gameConfig.scorePanelPoints.left,
+      top: interfaceViewConfig.scorePanelPoints.top,
+      left: interfaceViewConfig.scorePanelPoints.left,
       text: '',
-      fontSize: gameConfig.scorePanelPoints.fontSize,
+      fontSize: interfaceViewConfig.scorePanelPoints.fontSize,
     };
 
     this.levelPanel = {
-      imageName: gameConfig.levelPanel.imageName,
-      top: gameConfig.levelPanel.top,
-      left: gameConfig.levelPanel.left,
-      height: gameConfig.levelPanel.height,
-      width: gameConfig.levelPanel.width,
+      imageName: interfaceViewConfig.levelPanel.imageName,
+      top: interfaceViewConfig.levelPanel.top,
+      left: interfaceViewConfig.levelPanel.left,
+      height: interfaceViewConfig.levelPanel.height,
+      width: interfaceViewConfig.levelPanel.width,
     };
 
     this.levelPanelButton = {
-      imageName: gameConfig.levelPanelButton.imageName,
-      top: gameConfig.levelPanelButton.top,
-      left: gameConfig.levelPanelButton.left,
-      height: gameConfig.levelPanelButton.height,
-      width: gameConfig.levelPanelButton.width,
+      imageName: interfaceViewConfig.levelPanelButton.imageName,
+      top: interfaceViewConfig.levelPanelButton.top,
+      left: interfaceViewConfig.levelPanelButton.left,
+      height: interfaceViewConfig.levelPanelButton.height,
+      width: interfaceViewConfig.levelPanelButton.width,
     };
 
     this.levelPanelStateText = {
-      top: gameConfig.levelPanelStateText.top,
-      left: gameConfig.levelPanelStateText.left,
+      top: interfaceViewConfig.levelPanelStateText.top,
+      left: interfaceViewConfig.levelPanelStateText.left,
       text: '',
-      fontSize: gameConfig.levelPanelStateText.fontSize,
+      fontSize: interfaceViewConfig.levelPanelStateText.fontSize,
     };
 
     this.levelPanelButtonText = {
-      top: gameConfig.levelPanelButtonText.top,
-      left: gameConfig.levelPanelButtonText.left,
+      top: interfaceViewConfig.levelPanelButtonText.top,
+      left: interfaceViewConfig.levelPanelButtonText.left,
       text: '',
-      fontSize: gameConfig.levelPanelButtonText.fontSize,
+      fontSize: interfaceViewConfig.levelPanelButtonText.fontSize,
     };
 
     this.scorePanelShouldUpdate = false;
