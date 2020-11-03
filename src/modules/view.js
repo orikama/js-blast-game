@@ -12,6 +12,9 @@ function importAllImages() {
   });
 }
 
+const VIEW_STATE_GAME = 'game';
+const VIEW_STATE_MENU = 'menu';
+
 export default class View {
   // TODO: Temporary, rows and columns shouldn't be passed like that
   constructor(gameConfig, canvas, imagesLoadedCallback) {
@@ -26,12 +29,14 @@ export default class View {
       5: 'block_yellow',
     };
 
-    // TODO: remove this fileds
+    // TODO: remove this fields
     this.fieldTop = 0;
     this.fieldLeft = 0;
 
     this.interfaceView = new InterfaceView(gameConfig);
     this.tilesView = null;
+
+    this.viewState = VIEW_STATE_GAME;
   }
 
   isAnimationPlaying() {
@@ -42,13 +47,13 @@ export default class View {
     return this._onModelLevelChanged.bind(this);
   }
 
-  getMouseClickInfo(mouseY, mouseX) {
-    const tilesClickInfo = this.tilesView.getMouseClickInfo(mouseY, mouseX);
-    if (tilesClickInfo) {
-      return { type: 'tile', row: tilesClickInfo.row, column: tilesClickInfo.column };
+  getMouseClickObject(mouseY, mouseX) {
+    if (this.viewState === VIEW_STATE_MENU) {
+      const interfaceObject = this.interfaceView.getMouseClickObject(mouseY, mouseX);
+      return interfaceObject;
     }
 
-    return null;
+    return this.tilesView.getMouseClickObject(mouseY, mouseX);
   }
 
   setLevelChangedListener(listener) {
@@ -60,12 +65,22 @@ export default class View {
   }
 
   drawFrame() {
-    this._drawTilesAnimation();
+    if (this.isAnimationPlaying()) {
+      this._drawTilesAnimation();
+    } else if (this.viewState === VIEW_STATE_MENU) {
+      this._drawInterface(this.interfaceView.getMenuView());
+    }
   }
 
-  onModelTilesBlasted({ animationsData, scoreData }) {
+  onModelTilesBlasted({ animationsData, scoreData, gameState }) {
     this._queueTilesAnimations(animationsData);
+
     this.interfaceView.updateScorePanel(scoreData);
+    if (gameState) {
+      this.interfaceView.updateLevelState(gameState);
+      this.viewState = VIEW_STATE_MENU;
+    }
+
     this._drawInterface(this.interfaceView.getUpdatedView());
   }
 
@@ -83,8 +98,10 @@ export default class View {
     this.tilesView = new TilesView(rows, columns, this.fieldLeft, this.fieldTop);
 
     this.interfaceView.updateScorePanel({ movesLeft, score });
-    this._drawInterface(this.interfaceView.getView());
+    this._drawInterface(this.interfaceView.getInterfaceView());
     this._drawTiles(tiles);
+
+    this.viewState = VIEW_STATE_GAME;
   }
 
   _drawInterface({ imageViews, textViews }) {

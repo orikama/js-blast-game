@@ -11,7 +11,6 @@ export default class InterfaceView {
         height: gameConfig.field.height,
         width: gameConfig.field.width,
       },
-      // NOTE: I guess I should take fill color from field image dynamically
       fillStyle: gameConfig.field.fillStyle,
     };
 
@@ -37,6 +36,36 @@ export default class InterfaceView {
       fontSize: gameConfig.scorePanelPoints.fontSize,
     };
 
+    this.levelPanel = {
+      imageName: gameConfig.levelPanel.imageName,
+      top: gameConfig.levelPanel.top,
+      left: gameConfig.levelPanel.left,
+      height: gameConfig.levelPanel.height,
+      width: gameConfig.levelPanel.width,
+    };
+
+    this.levelPanelButton = {
+      imageName: gameConfig.levelPanelButton.imageName,
+      top: gameConfig.levelPanelButton.top,
+      left: gameConfig.levelPanelButton.left,
+      height: gameConfig.levelPanelButton.height,
+      width: gameConfig.levelPanelButton.width,
+    };
+
+    this.levelPanelStateText = {
+      top: gameConfig.levelPanelStateText.top,
+      left: gameConfig.levelPanelStateText.left,
+      text: '',
+      fontSize: gameConfig.levelPanelStateText.fontSize,
+    };
+
+    this.levelPanelButtonText = {
+      top: gameConfig.levelPanelButtonText.top,
+      left: gameConfig.levelPanelButtonText.left,
+      text: '',
+      fontSize: gameConfig.levelPanelButtonText.fontSize,
+    };
+
     this.scorePanelShouldUpdate = false;
   }
 
@@ -52,7 +81,37 @@ export default class InterfaceView {
     return this.textFillStyle;
   }
 
-  getView() {
+  shouldUpdate() {
+    return this.scorePanelShouldUpdate;
+  }
+
+  getMouseClickObject(mouseY, mouseX) {
+    if (mouseY >= this.levelPanelButton.top && mouseX >= this.levelPanelButton.left) {
+      const bottom = this.levelPanelButton.top + this.levelPanelButton.height;
+      const right = this.levelPanelButton.left + this.levelPanelButton.width;
+
+      if (mouseY <= bottom && mouseX <= right) {
+        return { object: 'levelPanelButton' };
+      }
+    }
+
+    return null;
+  }
+
+  getUpdatedView() {
+    const imageViews = [];
+    const textViews = [];
+
+    if (this.scorePanelShouldUpdate) {
+      this.scorePanelShouldUpdate = false;
+      imageViews.push(this.scorePanel);
+      textViews.push(this.scorePanelMoves, this.scorePanelPoints);
+    }
+
+    return { imageViews, textViews };
+  }
+
+  getInterfaceView() {
     const imageViews = [
       this.field.view, this.scorePanel,
     ];
@@ -64,22 +123,26 @@ export default class InterfaceView {
     return { imageViews, textViews };
   }
 
-  getUpdatedView() {
-    const imageViews = [];
-    const textViews = [];
-
-    if (this.scorePanelShouldUpdate) {
-      imageViews.push(this.scorePanel);
-      textViews.push(this.scorePanelMoves, this.scorePanelPoints);
-    }
+  getMenuView() {
+    const imageViews = [this.levelPanel, this.levelPanelButton];
+    const textViews = [this.levelPanelStateText, this.levelPanelButtonText];
 
     return { imageViews, textViews };
   }
 
-  updateScorePanel(scoreData) {
-    // TODO: scoreData.state is not processed rn
-    this.scorePanelMoves.text = scoreData.movesLeft.toString();
-    this.scorePanelPoints.text = scoreData.score.toString();
+  updateScorePanel({ movesLeft, score }) {
+    this.scorePanelMoves.text = movesLeft.toString();
+    this.scorePanelPoints.text = score.toString();
     this.scorePanelShouldUpdate = true;
+  }
+
+  updateLevelState(levelState) {
+    if (levelState === 'won') {
+      this.levelPanelStateText.text = 'Game Won';
+      this.levelPanelButtonText.text = 'Next';
+    } else {
+      this.levelPanelStateText.text = 'Game Lost';
+      this.levelPanelButtonText.text = 'Retry';
+    }
   }
 }

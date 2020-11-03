@@ -7,6 +7,7 @@ const gameConfig = {
     left: 0,
     height: 400,
     width: 400,
+    // NOTE: I should take fill color from field image dynamically
     fillStyle: 'rgb(13,35,61)',
   },
   scorePanel: {
@@ -25,6 +26,30 @@ const gameConfig = {
     top: 205,
     left: 490,
     fontSize: 30,
+  },
+  levelPanel: {
+    imageName: 'blue_panel',
+    top: 130,
+    left: 230,
+    height: 100,
+    width: 180,
+  },
+  levelPanelButton: {
+    imageName: 'button_green',
+    top: 190,
+    left: 270,
+    height: 30,
+    width: 100,
+  },
+  levelPanelStateText: {
+    top: 160,
+    left: 250,
+    fontSize: 25,
+  },
+  levelPanelButtonText: {
+    top: 215,
+    left: 285,
+    fontSize: 25,
   },
 };
 

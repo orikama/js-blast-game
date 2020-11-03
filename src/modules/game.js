@@ -27,9 +27,9 @@ export default class Game {
 
   _animationLoop(timestamp) {
     this._update(timestamp);
-    if (this.view.isAnimationPlaying()) {
-      this.view.drawFrame();
+    this.view.drawFrame();
 
+    if (this.view.isAnimationPlaying()) {
       window.requestAnimationFrame(this._animationLoopBind);
     }
   }
@@ -49,14 +49,16 @@ export default class Game {
     if (!this.view.isAnimationPlaying()) {
       const { mouseY, mouseX } = this._windowToCanvasMouseCoord(e.clientY, e.clientX);
 
-      const clickInfo = this.view.getMouseClickInfo(mouseY, mouseX);
+      const clickInfo = this.view.getMouseClickObject(mouseY, mouseX);
       if (clickInfo) {
-        if (clickInfo.type === 'tile') {
+        if (clickInfo.object === 'tile') {
           const modelUpdateData = this.model.blastTiles(clickInfo.row, clickInfo.column);
           if (modelUpdateData) {
             this.view.onModelTilesBlasted(modelUpdateData);
             this._runAnimationLoop();
           }
+        } else if (clickInfo.object === 'levelPanelButton') {
+          this.model.changeLevel();
         }
       }
     }

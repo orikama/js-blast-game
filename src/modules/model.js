@@ -1,5 +1,9 @@
 import Field from './field';
 
+const GAME_STATE_PLAYING = 'playing';
+const GAME_STATE_WON = 'won';
+const GAME_STATE_LOST = 'lost';
+
 export default class Model {
   constructor(levels) {
     this.levels = levels;
@@ -12,7 +16,7 @@ export default class Model {
     this.pointsForTile = 20;
 
     this.score = 0;
-    this.state = 'playing';
+    this.gameState = GAME_STATE_PLAYING;
 
     this.levelChangedCallback = null;
   }
@@ -22,7 +26,7 @@ export default class Model {
   }
 
   init() {
-    this._setLevel(this.currentLevel);
+    this._setLevel();
   }
 
   blastTiles(row, column) {
@@ -36,10 +40,19 @@ export default class Model {
     const scoreData = {
       movesLeft: this.movesLeft,
       score: this.score,
-      state: this.state,
     };
 
-    return { animationsData, scoreData };
+    const gameState = this.gameState === GAME_STATE_PLAYING ? null : this.gameState;
+
+    return { animationsData, scoreData, gameState };
+  }
+
+  changeLevel() {
+    if (this.gameState === GAME_STATE_WON) {
+      this.currentLevel = (this.currentLevel + 1) % this.levels.length;
+    }
+
+    this._setLevel();
   }
 
   _updateScore(tilesBlasted) {
@@ -47,24 +60,21 @@ export default class Model {
     this.score += this.pointsForTile * tilesBlasted;
 
     if (this.score >= this.scoreGoal) {
-      this.state = 'won';
+      this.gameState = GAME_STATE_WON;
     } else if (this.movesLeft === 0) {
-      this.state = 'lost';
+      this.gameState = GAME_STATE_LOST;
     }
   }
 
-  _setLevel(level) {
-    const currentLevel = this.levels[level];
+  _setLevel() {
+    const level = this.levels[this.currentLevel];
 
-    this.field = new Field(
-      currentLevel.rows, currentLevel.columns, currentLevel.colors, currentLevel.tilesToMatch,
-    );
-    this.movesLeft = currentLevel.moves;
-    this.scoreGoal = currentLevel.scoreGoal;
-    this.pointsForTile = 20;
+    this.field = new Field(level.rows, level.columns, level.colors, level.tilesToMatch);
+    this.movesLeft = level.moves;
+    this.scoreGoal = level.scoreGoal;
 
     this.score = 0;
-    this.state = 'playing';
+    this.gameState = GAME_STATE_PLAYING;
 
     this._levelChanged();
   }

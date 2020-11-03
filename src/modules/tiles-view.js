@@ -1,6 +1,7 @@
 import ScaleAnimation from './scale-animation';
 import GravityAnimation from './gravity-animation';
 
+// TODO: Move this to config
 const DESTRUCTION_ANIMATION_DURATION = 0.2;
 const GRAVITY_ANIMATION_DURATION = 0.5;
 const SPAWN_ANIMATION_DURATION = 0.2;
@@ -9,7 +10,7 @@ export default class TilesView {
   constructor(rows, columns, fieldLeft, fieldTop) {
     this.rows = rows;
     this.columns = columns;
-
+    // TODO: Move this to config
     this.tilesTop = fieldTop + 10;
     this.tilesLeft = fieldLeft + 10;
     this.tileHeight = 40;
@@ -42,13 +43,14 @@ export default class TilesView {
     return this.animationsQueue.length !== 0;
   }
 
-  getMouseClickInfo(mouseY, mouseX) {
+  getMouseClickObject(mouseY, mouseX) {
     if (mouseY >= this.tilesTop && mouseX >= this.tilesLeft) {
       const tilesBottom = this.tilesTop + this.rows * this.tileHeight;
       const tilesRight = this.tilesLeft + this.columns * this.tileWidth;
 
       if (mouseY <= tilesBottom && mouseX <= tilesRight) {
         return {
+          object: 'tile',
           row: Math.floor((mouseY - this.tilesTop) / this.tileHeight),
           column: Math.floor((mouseX - this.tilesLeft) / this.tileWidth),
         };
