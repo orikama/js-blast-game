@@ -1,3 +1,5 @@
+import './assets/css/style.css';
+
 import gameConfig from './assets/game-config';
 import levels from './assets/levels';
 import Game from './modules/game';
