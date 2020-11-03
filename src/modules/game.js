@@ -5,9 +5,9 @@ export default class Game {
   constructor(gameConfig, levels, canvas) {
     this.canvas = canvas;
 
-    this.model = new Model(levels);
+    this.model = new Model(gameConfig.model, levels);
     this.view = new View(
-      gameConfig, this.canvas, this._onImagesLoaded.bind(this),
+      gameConfig.view, this.canvas, this._onImagesLoaded.bind(this),
     );
 
     this.lastTimestamp = 0.0;
@@ -51,14 +51,27 @@ export default class Game {
 
       const clickInfo = this.view.getMouseClickObject(mouseY, mouseX);
       if (clickInfo) {
-        if (clickInfo.object === 'tile') {
-          const modelUpdateData = this.model.blastTiles(clickInfo.row, clickInfo.column);
-          if (modelUpdateData) {
-            this.view.onModelTilesBlasted(modelUpdateData);
-            this._runAnimationLoop();
+        switch (clickInfo.object) {
+          case 'tile': {
+            const modelUpdateData = this.model.blastTiles(clickInfo.row, clickInfo.column);
+            if (modelUpdateData) {
+              this.view.onModelTilesBlasted(modelUpdateData);
+              this._runAnimationLoop();
+            }
           }
-        } else if (clickInfo.object === 'levelPanelButton') {
-          this.model.changeLevel();
+            break;
+          case 'levelPanelButton':
+            this.model.changeLevel();
+            break;
+          case 'bonusShufflePanel': {
+            const shuffleData = this.model.shuffleTiles();
+            if (shuffleData) {
+              this.view.onModelTilesShuffled(shuffleData);
+            }
+          }
+            break;
+          default:
+            throw new Error('ESlint was expecting default case, so I gave it');
         }
       }
     }

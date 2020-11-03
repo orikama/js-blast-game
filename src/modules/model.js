@@ -5,9 +5,11 @@ const GAME_STATE_WON = 'won';
 const GAME_STATE_LOST = 'lost';
 
 export default class Model {
-  constructor(levels) {
+  constructor(modelConfig, levels) {
     this.levels = levels;
     this.currentLevel = 0;
+
+    this.shufflesLeft = modelConfig.shuffles;
 
     this.field = null;
 
@@ -47,6 +49,20 @@ export default class Model {
     return { animationsData, scoreData, gameState };
   }
 
+  shuffleTiles() {
+    if (this.shufflesLeft > 0) {
+      --this.shufflesLeft;
+      this.field.shuffleTiles();
+
+      return {
+        tiles: this.field.getTiles(),
+        shufflesLeft: this.shufflesLeft,
+      };
+    }
+
+    return null;
+  }
+
   changeLevel() {
     if (this.gameState === GAME_STATE_WON) {
       this.currentLevel = (this.currentLevel + 1) % this.levels.length;
@@ -61,7 +77,7 @@ export default class Model {
 
     if (this.score >= this.scoreGoal) {
       this.gameState = GAME_STATE_WON;
-    } else if (this.movesLeft === 0) {
+    } else if (this.movesLeft === 0 && this.shufflesLeft === 0) {
       this.gameState = GAME_STATE_LOST;
     }
   }
@@ -84,6 +100,7 @@ export default class Model {
       tiles: this.field.getTiles(),
       movesLeft: this.movesLeft,
       score: this.score,
+      shufflesLeft: this.shufflesLeft,
     });
   }
 }

@@ -1,6 +1,11 @@
+// NOTE: Вообще смысл этого класса был в том чтобы пересчитывать координаты объектов,
+//  при изменении размера канваса или при разных разрешениях экранов.
+//  (ну и также для того что бы разделить данные и код)
+//  А в конфиге координаты должны были задаваться в процентах.
+//  В итоге получилась просто копипаста из конфига
 export default class InterfaceView {
   constructor(interfaceViewConfig) {
-    this.backgroundFillStyle = 'rgb(161,161,161)';
+    this.backgroundFillStyle = interfaceViewConfig.backgroundFillStyle;
     this.font = interfaceViewConfig.font;
     this.textFillStyle = interfaceViewConfig.textFillStyle;
 
@@ -67,7 +72,30 @@ export default class InterfaceView {
       fontSize: interfaceViewConfig.levelPanelButtonText.fontSize,
     };
 
+    this.bonusesText = {
+      top: interfaceViewConfig.bonusesText.top,
+      left: interfaceViewConfig.bonusesText.left,
+      text: interfaceViewConfig.bonusesText.text,
+      fontSize: interfaceViewConfig.bonusesText.fontSize,
+    };
+
+    this.bonusShufflePanel = {
+      imageName: interfaceViewConfig.bonusPanel.imageName,
+      top: interfaceViewConfig.bonusPanel.top,
+      left: interfaceViewConfig.bonusPanel.left,
+      height: interfaceViewConfig.bonusPanel.height,
+      width: interfaceViewConfig.bonusPanel.width,
+    };
+
+    this.bonusShuffleAmountText = {
+      top: interfaceViewConfig.bonusPanelAmountText.top,
+      left: interfaceViewConfig.bonusPanelAmountText.left,
+      text: '',
+      fontSize: interfaceViewConfig.bonusPanelAmountText.fontSize,
+    };
+
     this.scorePanelShouldUpdate = false;
+    this.bonusPanelShouldUpdate = false;
   }
 
   getFont() {
@@ -100,6 +128,15 @@ export default class InterfaceView {
       }
     }
 
+    if (mouseY >= this.bonusShufflePanel.top && mouseX >= this.bonusShufflePanel.left) {
+      const bottom = this.bonusShufflePanel.top + this.bonusShufflePanel.height;
+      const right = this.bonusShufflePanel.left + this.bonusShufflePanel.width;
+
+      if (mouseY <= bottom && mouseX <= right) {
+        return { object: 'bonusShufflePanel' };
+      }
+    }
+
     return null;
   }
 
@@ -112,17 +149,22 @@ export default class InterfaceView {
       imageViews.push(this.scorePanel);
       textViews.push(this.scorePanelMoves, this.scorePanelPoints);
     }
+    if (this.bonusPanelShouldUpdate) {
+      this.bonusPanelShouldUpdate = false;
+      imageViews.push(this.bonusShufflePanel);
+      textViews.push(this.bonusShuffleAmountText);
+    }
 
     return { imageViews, textViews };
   }
 
   getInterfaceView() {
     const imageViews = [
-      this.field.view, this.scorePanel,
+      this.field.view, this.scorePanel, this.bonusShufflePanel,
     ];
 
     const textViews = [
-      this.scorePanelMoves, this.scorePanelPoints,
+      this.scorePanelMoves, this.scorePanelPoints, this.bonusesText, this.bonusShuffleAmountText,
     ];
 
     return { imageViews, textViews };
@@ -139,6 +181,11 @@ export default class InterfaceView {
     this.scorePanelMoves.text = movesLeft.toString();
     this.scorePanelPoints.text = score.toString();
     this.scorePanelShouldUpdate = true;
+  }
+
+  updateBonusShufflePanel(shufflesLeft) {
+    this.bonusShuffleAmountText.text = shufflesLeft.toString();
+    this.bonusPanelShouldUpdate = true;
   }
 
   updateLevelState(levelState) {

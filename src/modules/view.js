@@ -16,8 +16,7 @@ const VIEW_STATE_GAME = 'game';
 const VIEW_STATE_MENU = 'menu';
 
 export default class View {
-  // TODO: Temporary, rows and columns shouldn't be passed like that
-  constructor(gameConfig, canvas, imagesLoadedCallback) {
+  constructor(viewConfig, canvas, imagesLoadedCallback) {
     this.context = canvas.getContext('2d');
 
     this.images = View._loadImages(imagesLoadedCallback);
@@ -30,8 +29,8 @@ export default class View {
       5: 'block_yellow',
     };
 
-    this.interfaceView = new InterfaceView(gameConfig.interfaceView);
-    this.tilesView = new TilesView(gameConfig.tilesView);
+    this.interfaceView = new InterfaceView(viewConfig.interfaceView);
+    this.tilesView = new TilesView(viewConfig.tilesView);
 
     this.viewState = VIEW_STATE_GAME;
   }
@@ -45,8 +44,14 @@ export default class View {
   }
 
   getMouseClickObject(mouseY, mouseX) {
-    if (this.viewState === VIEW_STATE_MENU) {
-      const interfaceObject = this.interfaceView.getMouseClickObject(mouseY, mouseX);
+    const interfaceObject = this.interfaceView.getMouseClickObject(mouseY, mouseX);
+
+    if (this.viewState === VIEW_STATE_MENU
+      && (interfaceObject === null || interfaceObject.object !== 'levelPanelButton')) {
+      return null;
+    }
+
+    if (interfaceObject) {
       return interfaceObject;
     }
 
@@ -81,6 +86,12 @@ export default class View {
     this._drawInterfaceUpdates();
   }
 
+  onModelTilesShuffled({ tiles, shufflesLeft }) {
+    this.interfaceView.updateBonusShufflePanel(shufflesLeft);
+    this._drawInterfaceUpdates();
+    this._drawTiles(tiles);
+  }
+
   _queueTilesAnimations(animationsData) {
     this.tilesView.queueTilesDestructionAnimation(animationsData.blastedTiles);
     if (animationsData.gravityTiles) {
@@ -89,12 +100,16 @@ export default class View {
     this.tilesView.queueTilesSpawnAnimation(animationsData.newTiles);
   }
 
-  _onModelLevelChanged({ tiles, movesLeft, score }) {
+  // eslint-disable-next-line object-curly-newline
+  _onModelLevelChanged({ tiles, movesLeft, score, shufflesLeft }) {
     const rows = tiles.length;
     const columns = tiles[0].length;
     this.tilesView.createView(rows, columns);
 
     this.interfaceView.updateScorePanel({ movesLeft, score });
+    // NOTE: По идее, при текущей реализации нет смысла обновлять этот бонус при смене уровня,
+    //  но это был быстрый костыль
+    this.interfaceView.updateBonusShufflePanel(shufflesLeft);
     this._drawWholeInterface();
     this._drawTiles(tiles);
 

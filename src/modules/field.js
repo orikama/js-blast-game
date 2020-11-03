@@ -44,6 +44,17 @@ export default class Field {
     return null;
   }
 
+  shuffleTiles() {
+    for (let i = this.rows - 1; i > 0; --i) {
+      for (let j = this.columns - 1; j > 0; --j) {
+        const row = getRandomInt(0, i);
+        const column = getRandomInt(0, j);
+
+        [this.tiles[row][column], this.tiles[i][j]] = [this.tiles[i][j], this.tiles[row][column]];
+      }
+    }
+  }
+
   _createTiles() {
     const colorTileMinValue = EMPTY_TILE + 1;
 
