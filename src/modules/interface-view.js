@@ -1,5 +1,6 @@
 export default class InterfaceView {
   constructor(interfaceViewConfig) {
+    this.backgroundFillStyle = 'rgb(161,161,161)';
     this.font = interfaceViewConfig.font;
     this.textFillStyle = interfaceViewConfig.textFillStyle;
 
@@ -71,6 +72,10 @@ export default class InterfaceView {
 
   getFont() {
     return this.font;
+  }
+
+  getBackgroundFillStyle() {
+    return this.backgroundFillStyle;
   }
 
   getFieldFillStyle() {

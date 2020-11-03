@@ -65,7 +65,7 @@ export default class View {
     if (this.isAnimationPlaying()) {
       this._drawTilesAnimation();
     } else if (this.viewState === VIEW_STATE_MENU) {
-      this._drawInterface(this.interfaceView.getMenuView());
+      this._drawMenu();
     }
   }
 
@@ -78,7 +78,7 @@ export default class View {
       this.viewState = VIEW_STATE_MENU;
     }
 
-    this._drawInterface(this.interfaceView.getUpdatedView());
+    this._drawInterfaceUpdates();
   }
 
   _queueTilesAnimations(animationsData) {
@@ -95,13 +95,30 @@ export default class View {
     this.tilesView.createView(rows, columns);
 
     this.interfaceView.updateScorePanel({ movesLeft, score });
-    this._drawInterface(this.interfaceView.getInterfaceView());
+    this._drawWholeInterface();
     this._drawTiles(tiles);
 
     this.viewState = VIEW_STATE_GAME;
   }
 
-  _drawInterface({ imageViews, textViews }) {
+  _drawMenu() {
+    this._drawInterface(this.interfaceView.getMenuView(), false);
+  }
+
+  _drawWholeInterface() {
+    this._drawInterface(this.interfaceView.getInterfaceView(), true);
+  }
+
+  _drawInterfaceUpdates() {
+    this._drawInterface(this.interfaceView.getUpdatedView(), false);
+  }
+
+  _drawInterface({ imageViews, textViews }, clearBackground) {
+    if (clearBackground) {
+      this.context.fillStyle = this.interfaceView.getBackgroundFillStyle();
+      this.context.fillRect(0, 0, 640, 480);
+    }
+
     imageViews.forEach((imageView) => {
       const image = this.images[imageView.imageName];
       this.context.drawImage(
